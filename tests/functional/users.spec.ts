@@ -41,7 +41,7 @@ test.group('User API', () => {
     assert.isString(response.body().message)
   })
 
-  test('can update a user password', async ({ client, assert, cleanup }) => {
+  test('can update a user password', async ({ client, assert }) => {
     const password = 'testing_password'
     const newPassword = 'new_testing_password'
     const user = await UserFactory.merge({ password }).create()
