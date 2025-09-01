@@ -1,20 +1,24 @@
 import { test } from '@japa/runner'
 import { NoteFactory } from '#database/factories/note_factory'
 import { DateTime } from 'luxon'
+import { UserFactory } from '#database/factories/user_factory'
 
 test.group('Note API', () => {
   test('can retrieve list of notes', async ({ client, assert }) => {
-    await NoteFactory.createMany(3)
+    const user = await UserFactory.create()
+    await NoteFactory.merge({ userId: user.id }).createMany(3)
 
-    const response = await client.get('/api/notes')
+    const response = await client.get('/api/notes').loginAs(user)
 
     response.assertStatus(200)
     assert.isArray(response.body())
   })
 
   test('can create a new note', async ({ client, assert }) => {
+    const user = await UserFactory.create()
+
     const note = await NoteFactory.make()
-    const response = await client.post('/api/notes').json(note)
+    const response = await client.post('/api/notes').loginAs(user).json(note)
 
     response.assertStatus(200)
     assert.isObject(response.body())
@@ -22,9 +26,11 @@ test.group('Note API', () => {
   })
 
   test('can retrieve a note', async ({ client, assert }) => {
-    const note = await NoteFactory.create()
+    const user = await UserFactory.create()
 
-    const response = await client.get(`/api/notes/${note.id}`)
+    const note = await NoteFactory.merge({ userId: user.id }).create()
+
+    const response = await client.get(`/api/notes/${note.id}`).loginAs(user)
 
     response.assertStatus(200)
     assert.isObject(response.body())
@@ -36,10 +42,12 @@ test.group('Note API', () => {
   })
 
   test('can update a note', async ({ client, assert }) => {
-    const note = await NoteFactory.create()
+    const user = await UserFactory.create()
+
+    const note = await NoteFactory.merge({ userId: user.id }).create()
     const newNote = await NoteFactory.make()
 
-    const response = await client.patch(`/api/notes/${note.id}`).json(newNote)
+    const response = await client.patch(`/api/notes/${note.id}`).loginAs(user).json(newNote)
 
     response.assertStatus(200)
     assert.isObject(response.body())
@@ -47,9 +55,11 @@ test.group('Note API', () => {
   })
 
   test('can delete a note', async ({ client, assert }) => {
-    const note = await NoteFactory.create()
+    const user = await UserFactory.create()
 
-    const response = await client.delete(`/api/notes/${note.id}`)
+    const note = await NoteFactory.merge({ userId: user.id }).create()
+
+    const response = await client.delete(`/api/notes/${note.id}`).loginAs(user)
 
     response.assertStatus(200)
     assert.isObject(response.body())
@@ -57,9 +67,11 @@ test.group('Note API', () => {
   })
 
   test('can restore a note', async ({ client, assert }) => {
-    const note = await NoteFactory.merge({ deletedAt: DateTime.now() }).create()
+    const user = await UserFactory.create()
 
-    const response = await client.post(`/api/notes/restore/${note.id}`)
+    const note = await NoteFactory.merge({ deletedAt: DateTime.now(), userId: user.id }).create()
+
+    const response = await client.post(`/api/notes/restore/${note.id}`).loginAs(user)
 
     response.assertStatus(200)
     assert.isObject(response.body())

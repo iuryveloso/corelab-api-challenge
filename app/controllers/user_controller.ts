@@ -51,7 +51,7 @@ export default class UserController {
     await disk.delete(`./avatar/${oldFileName}`)
 
     user.avatar = fileName
-    user.save()
+    await user.save()
 
     return { message: 'Profile avatar updated!' }
   }
@@ -68,7 +68,7 @@ export default class UserController {
     }
 
     user.password = request.input('password')
-    user.save()
+    await user.save()
 
     return { message: 'Password updated!' }
   }
