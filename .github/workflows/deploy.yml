@@ -35,6 +35,8 @@ jobs:
           node ace migration:run
 
       - name: Run tests
+        env:
+          DB_CONNECTION: sqlite
         run: node ace test
 
   deploy:
