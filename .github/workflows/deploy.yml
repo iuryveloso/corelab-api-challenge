@@ -1,0 +1,58 @@
+name: CI/CD Adonisjs on AWS EC2
+
+on:
+  push:
+    branches:
+      - test-build
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare db connection
+        run: |
+          cp .env.example .env
+          node ace generate:key
+
+      - name: Migrate data
+        env:
+          DB_CONNECTION: sqlite
+        run: node ace migration:run
+
+      - name: Run tests
+        run: node ace test
+
+  deploy:
+    name: Deploy on EC2
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+
+      - name: Configure and send to EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /corenote-api
+            git pull origin main
+            docker compose down
+            docker compose build api
+            docker compose up -d

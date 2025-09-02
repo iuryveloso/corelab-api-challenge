@@ -7,6 +7,7 @@ RUN node ace build
 RUN node ace generate:key
 COPY ./.env ./build/.env
 COPY ./node_modules ./build/node_modules
+COPY ./storage ./build/storage
 ENV HOST=0.0.0.0
 ENV DB_HOST=mysql
 ENV NODE_ENV=production
