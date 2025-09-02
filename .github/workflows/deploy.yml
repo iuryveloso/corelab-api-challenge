@@ -3,7 +3,7 @@ name: CI/CD Adonisjs on AWS EC2
 on:
   push:
     branches:
-      - test-build
+      - main
 
 jobs:
   test:
