@@ -30,7 +30,9 @@ jobs:
       - name: Migrate data
         env:
           DB_CONNECTION: sqlite
-        run: node ace migration:run
+        run: |
+          mkdir tmp
+          node ace migration:run
 
       - name: Run tests
         run: node ace test
